@@ -1,0 +1,31 @@
+// Mesures DAX du tableau de bord "Budget vs réalisé".
+// Table source : Ecarts (importée depuis data/ecarts_par_produit.csv).
+// Colonnes : mois, produit, marge_budget, marge_reelle, ecart_total, effet_volume, effet_prix, effet_cout.
+// Convention : un écart favorable est positif.
+
+Marge budget = SUM ( Ecarts[marge_budget] )
+
+Marge réelle = SUM ( Ecarts[marge_reelle] )
+
+Écart total = [Marge réelle] - [Marge budget]
+
+Écart en % = DIVIDE ( [Écart total], [Marge budget] )
+
+Effet volume = SUM ( Ecarts[effet_volume] )
+
+Effet prix = SUM ( Ecarts[effet_prix] )
+
+Effet coût = SUM ( Ecarts[effet_cout] )
+
+// Doit valoir 0 (à arrondi près) : la somme des trois effets explique tout l'écart.
+Contrôle décomposition = [Écart total] - ( [Effet volume] + [Effet prix] + [Effet coût] )
+
+// Cumul depuis janvier jusqu'au mois affiché. "mois" est un numéro de 1 à 12.
+Écart cumulé =
+CALCULATE (
+    [Écart total],
+    FILTER ( ALL ( Ecarts[mois] ), Ecarts[mois] <= MAX ( Ecarts[mois] ) )
+)
+
+// Pour la mise en forme conditionnelle (couleur de police ou de fond d'une carte ou d'une cellule).
+Couleur écart = IF ( [Écart total] >= 0, "#2E7D32", "#C62828" )
